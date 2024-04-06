@@ -12,14 +12,16 @@ type UploadFileParams = {
   url: string
   file: File
   onProgress: (progress: number) => void
+  onCancel: () => void
   signal: AbortSignal
 }
 
 export const uploadFile = async ({
-  url,
+  // url,
   file,
   onProgress,
   signal,
+  onCancel,
 }: UploadFileParams): Promise<void> => {
   const totalSize = file.size
   let uploadedSize = 0
@@ -28,6 +30,11 @@ export const uploadFile = async ({
     await new Promise((resolve) => setTimeout(resolve, 100))
     uploadedSize += totalSize * 0.2
     onProgress(Math.min(uploadedSize / totalSize, 1))
+
+    if (signal.aborted) {
+      onCancel()
+      break
+    }
   }
 }
 

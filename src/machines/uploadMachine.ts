@@ -1,12 +1,14 @@
+import { v4 } from 'uuid'
 import { assign, fromPromise, setup } from 'xstate'
 
-import { getUploadUrl } from '../api'
+import { getUploadUrl, uploadFile } from '../api'
 
 type TrackedFile = {
   file: File
   progress: number
   state: 'pending' | 'uploading' | 'success' | 'failed'
   size: number
+  id: string
 }
 
 type UploadContext = {
@@ -17,25 +19,43 @@ type UploadContext = {
   errorMessage: string
 }
 
-type UploadEvent = {
-  type: 'SELECT_FILES'
-  files: Array<File>
-}
+type UploadEvents =
+  | {
+      type: 'SELECT_FILES'
+      files: Array<File>
+    }
+  | {
+      type: 'UPDATE_CURRENT_FILE_PROGRESS'
+      progress: number
+    }
+  | {
+      type: 'CANCEL_CURRENT_FILE_UPLOAD'
+      fileId: string
+    }
 
 export const uploadMachine = setup({
   types: {
     context: {} as UploadContext,
-    events: {} as UploadEvent,
+    events: {} as UploadEvents,
   },
   actions: {
+    setNextFileToUploading: assign({
+      currentFileIndex: ({ context }) => context.currentFileIndex + 1,
+    }),
     setFiles: assign({
-      trackedFiles: ({ event }) =>
-        event.files.map((file) => ({
-          state: 'pending' as const,
-          progress: 0,
-          size: file.size,
-          file,
-        })),
+      trackedFiles: ({ event }) => {
+        if (event.type === 'SELECT_FILES') {
+          return event.files.map((file) => ({
+            state: 'pending' as const,
+            progress: 0,
+            size: file.size,
+            file,
+            id: v4(),
+          }))
+        }
+
+        return []
+      },
     }),
     setUploadData: assign(
       (
@@ -49,12 +69,84 @@ export const uploadMachine = setup({
         uploadUrl: params.url,
       })
     ),
+    updateFileProgress: assign({
+      trackedFiles: ({ event, context }) => {
+        const { progress } = event as { progress: number }
+        console.log('progress from event', progress)
+        return context.trackedFiles.map((file) => {
+          if (file.id === context.trackedFiles[context.currentFileIndex].id) {
+            return {
+              ...file,
+              progress,
+            }
+          }
+          return file
+        })
+      },
+    }),
+    removeFile: assign({
+      trackedFiles: ({ event, context }) => {
+        const { fileId } = event as { fileId: string }
+        return context.trackedFiles.filter((file) => file.id !== fileId)
+      },
+    }),
+    setCurrentFileToUploading: assign({
+      trackedFiles: ({ context }) => {
+        const currentFile = context.trackedFiles[context.currentFileIndex]
+        currentFile.state = 'uploading'
+        return context.trackedFiles
+      },
+    }),
+    updateFileToError: assign({
+      trackedFiles: ({ context }) => {
+        const currentFile = context.trackedFiles[context.currentFileIndex]
+        currentFile.state = 'failed'
+        return context.trackedFiles
+      },
+    }),
+    updateFileToSuccess: assign({
+      trackedFiles: ({ context }) => {
+        const currentFile = context.trackedFiles[context.currentFileIndex]
+        currentFile.state = 'success'
+        return context.trackedFiles
+      },
+    }),
   },
   actors: {
     getUploadUrl: fromPromise(getUploadUrl),
+    uploadCurrentFile: fromPromise(async ({ input, self }) => {
+      const { context } = input as { context: UploadContext }
+
+      await uploadFile({
+        file: context.trackedFiles[context.currentFileIndex].file,
+        url: context.uploadUrl,
+        onProgress: (progress: number) => {
+          // this ends up being 1, so that's correct
+          console.log('progress', progress)
+          self.send({
+            type: 'UPDATE_CURRENT_FILE_PROGRESS',
+            progress: Math.round(progress * 100),
+          })
+        },
+        onCancel: () => {
+          self.send({
+            type: 'CANCEL_CURRENT_FILE_UPLOAD',
+            fileId: context.trackedFiles[context.currentFileIndex].id,
+          })
+        },
+        signal: new AbortController().signal,
+      })
+    }),
+  },
+  guards: {
+    isCurrentFile: ({ event, context }) => {
+      const { fileId } = event as { fileId: string }
+      return context.trackedFiles[context.currentFileIndex].id === fileId
+    },
+    hasNextFile: ({ context }) =>
+      context.currentFileIndex < context.trackedFiles.length - 1,
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QFcAOAbA9gQwgOgEsJ0wBiAZQFEAZSgYQBUB9AMQElbyBtABgF1EoVJlgEALgUwA7QSAAeiAIwAmAJx4A7AA5Fi7Rp4AWAKyKtPLQBoQAT0QBmHpvvmAbDseOeuwwF9f1mhYuHgwYhJSUACqGDgQUQBO6KQQ0mCEUgBumADW6UFxoWDhBJExwfFJCKXZAMbYEtK8fM2ywqKNMki2iAZ4iq48g67K2qp6GvbWCgiuhk4WjvNarnquGn4BIAUhYRHRsbiJyWAJCZgJeBgNAGYXALZ4O-h7pQcVx9VZmPWdza3ddriSRdUAzVz2Yx4Iw8HgaZS6NYbax2BAAWj0TmUhlUxhxqg0igsylG-i2UkwEDgsmebREwOkshmaOUeARWi0CLUeJ04zmKMQLPWeHMOkM9nhRM59n8gUO+CIJDpHRBTMQJk0Oj0WgMJjMFkMAoQxnseFUcwhQ08sJ8su28qKJTK8uOyoZoPkDlG-VU2MUxhWSPsriNfQGQyGoy04w0kztzzwCTAuBsDEw5Tibs6atmJLNJpUxiNyhWZvM4x1Ywm8YdN2wBBIEDTAHFihmjkks6rujMfJpzTqiz10fq8I4xRKEcTSWSgA */
   id: 'upload',
   initial: 'gettingUploadUrl',
   context: {
@@ -85,7 +177,73 @@ export const uploadMachine = setup({
       on: {
         SELECT_FILES: {
           actions: { type: 'setFiles' },
-          target: 'uploading',
+          target: 'uploadingFiles',
+        },
+      },
+    },
+
+    uploadingFiles: {
+      initial: 'uploadingFile',
+      states: {
+        uploadingFile: {
+          entry: 'setCurrentFileToUploading',
+          invoke: {
+            src: 'uploadCurrentFile',
+            input: ({ context }) => ({
+              context,
+            }),
+            onDone: {
+              target: 'checkNextFile',
+              actions: 'updateFileToSuccess',
+            },
+            onError: {
+              target: 'checkNextFile',
+              actions: 'updateFileToError',
+            },
+          },
+
+          on: {
+            UPDATE_CURRENT_FILE_PROGRESS: {
+              actions: {
+                type: 'updateFileProgress',
+                params: ({ event }) => event.progress,
+              },
+            },
+            CANCEL_CURRENT_FILE_UPLOAD: {
+              actions: {
+                type: 'removeFile',
+                params: ({ event }) => event.fileId,
+              },
+              target: 'checkNextFile',
+            },
+          },
+        },
+
+        checkNextFile: {
+          always: [
+            {
+              guard: 'hasNextFile',
+              actions: 'setNextFileToUploading',
+              target: 'uploadingFile',
+            },
+            {
+              target: 'uploadsComplete',
+            },
+          ],
+        },
+        updateFileToError: {
+          entry: assign({
+            trackedFiles: ({ context }) => {
+              const currentFile = context.trackedFiles[context.currentFileIndex]
+              currentFile.state = 'failed'
+              return context.trackedFiles
+            },
+          }),
+          target: 'checkNextFile',
+        },
+
+        uploadsComplete: {
+          type: 'final',
         },
       },
     },
