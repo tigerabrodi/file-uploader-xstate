@@ -16,8 +16,6 @@ function App() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
-  console.log('state', state)
-
   return (
     <main className="flex h-screen w-screen flex-col items-center">
       <div className="mt-8 flex w-full flex-col items-center justify-center gap-4">
@@ -33,6 +31,11 @@ function App() {
               : "Drag 'n' drop some files here, or click to select files"}
           </p>
         </div>
+        {state.matches('failedToGetUploadUrl') && (
+          <p className="text-lg text-red-600">
+            Failed to select files. Please try again.
+          </p>
+        )}
       </div>
     </main>
   )
