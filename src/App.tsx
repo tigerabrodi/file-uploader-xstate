@@ -19,15 +19,15 @@ function App() {
   console.log('state', state)
 
   return (
-    <main className="flex flex-col items-center h-screen w-screen">
-      <div className="flex flex-col items-center justify-center gap-4 mt-8">
+    <main className="flex h-screen w-screen flex-col items-center">
+      <div className="mt-8 flex w-full flex-col items-center justify-center gap-4">
         <h1 className="text-4xl font-bold">Upload files</h1>
         <div
           {...getRootProps()}
-          className="bg-slate-700 rounded-lg p-4 text-center"
+          className="flex h-[200px] w-[700px] flex-col items-center rounded-lg bg-slate-700 p-8 text-center"
         >
           <input {...getInputProps()} />
-          <p className="text-slate-200">
+          <p className="mt-auto text-2xl text-slate-200">
             {isDragActive
               ? 'Drop the files here ...'
               : "Drag 'n' drop some files here, or click to select files"}
