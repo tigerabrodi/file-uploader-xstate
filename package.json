@@ -11,12 +11,17 @@
     "lint:fix": "eslint . --ext ts,tsx --fix"
   },
   "dependencies": {
+    "@xstate/react": "^4.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
+    "uuid": "^9.0.1",
+    "xstate": "^5.9.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
+    "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react": "^4.2.1",
