@@ -14,6 +14,7 @@ type UploadContext = {
   currentFileIndex: number
   uploadId: string
   uploadUrl: string
+  errorMessage: string
 }
 
 type UploadEvent = {
@@ -59,6 +60,7 @@ export const uploadMachine = setup({
   context: {
     trackedFiles: [],
     currentFileIndex: 0,
+    errorMessage: '',
     uploadId: '',
     uploadUrl: '',
   },
@@ -88,6 +90,10 @@ export const uploadMachine = setup({
       },
     },
 
-    failedToGetUploadUrl: {},
+    failedToGetUploadUrl: {
+      entry: assign({
+        errorMessage: () => 'Failed to get upload URL. Please try again.',
+      }),
+    },
   },
 })

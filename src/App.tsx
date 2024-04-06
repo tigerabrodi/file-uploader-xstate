@@ -32,9 +32,7 @@ function App() {
           </p>
         </div>
         {state.matches('failedToGetUploadUrl') && (
-          <p className="text-lg text-red-600">
-            Failed to select files. Please try again.
-          </p>
+          <p className="text-lg text-red-600">{state.context.errorMessage}</p>
         )}
       </div>
     </main>
