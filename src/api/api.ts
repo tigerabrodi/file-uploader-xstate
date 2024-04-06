@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 
 export const getUploadUrl = async (): Promise<{ id: string; url: string }> => {
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 400))
   return {
     id: uuidv4(),
     url: 'https://example.com/upload',
@@ -32,5 +32,5 @@ export const uploadFile = async ({
 }
 
 export const notifyCompletion = async (id: string): Promise<void> => {
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 300))
 }
