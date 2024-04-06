@@ -72,15 +72,18 @@ export const uploadMachine = setup({
     updateFileProgress: assign({
       trackedFiles: ({ event, context }) => {
         const { progress } = event as { progress: number }
-        console.log('progress from event', progress)
-        return context.trackedFiles.map((file) => {
-          if (file.id === context.trackedFiles[context.currentFileIndex].id) {
+        // This is not working!?
+        // We never get here...
+        return context.trackedFiles.map((trackedFile) => {
+          if (
+            trackedFile.id === context.trackedFiles[context.currentFileIndex].id
+          ) {
             return {
-              ...file,
+              ...trackedFile,
               progress,
             }
           }
-          return file
+          return trackedFile
         })
       },
     }),
@@ -193,12 +196,12 @@ export const uploadMachine = setup({
               context,
             }),
             onDone: {
-              target: 'checkNextFile',
               actions: 'updateFileToSuccess',
+              target: 'checkNextFile',
             },
             onError: {
-              target: 'checkNextFile',
               actions: 'updateFileToError',
+              target: 'checkNextFile',
             },
           },
 
