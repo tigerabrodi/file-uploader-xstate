@@ -1,3 +1,5 @@
+import type { BaseActorRef } from 'xstate'
+
 import { v4 } from 'uuid'
 import { assign, fromPromise, setup } from 'xstate'
 
@@ -141,20 +143,23 @@ export const uploadMachine = setup({
   },
   actors: {
     getUploadUrl: fromPromise(getUploadUrl),
-    uploadCurrentFile: fromPromise(async ({ input, self }) => {
-      const { context } = input as { context: UploadContext }
+    uploadCurrentFile: fromPromise(async ({ input }) => {
+      const { context, parent } = input as {
+        context: UploadContext
+        parent: BaseActorRef<UploadEvents>
+      }
 
       await uploadFile({
         file: context.trackedFiles[context.currentFileIndex].file,
         url: context.uploadUrl,
         onProgress: (progress: number) => {
-          self.send({
+          parent.send({
             type: 'UPDATE_CURRENT_FILE_PROGRESS',
             progress: Math.round(progress * 100),
           })
         },
         onCancel: () => {
-          self.send({
+          parent.send({
             type: 'CANCEL_CURRENT_FILE_UPLOAD',
             fileId: context.trackedFiles[context.currentFileIndex].id,
           })
@@ -214,8 +219,9 @@ export const uploadMachine = setup({
           entry: 'setCurrentFileToUploading',
           invoke: {
             src: 'uploadCurrentFile',
-            input: ({ context }) => ({
+            input: ({ context, self }) => ({
               context,
+              parent: self,
             }),
             onDone: {
               actions: 'updateFileToSuccess',
