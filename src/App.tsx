@@ -1,13 +1,15 @@
-import { useMachine } from '@xstate/react'
+import type { UploadFile } from './machines/UploadManagerMachine'
+
+import { useMachine, useSelector } from '@xstate/react'
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 
 import styles from './App.module.css'
 import { CloseIcon, FileIcon } from './icons'
-import { uploadMachine } from './machines'
+import { uploadManagerMachine } from './machines/UploadManagerMachine'
 
 function App() {
-  const [state, send] = useMachine(uploadMachine)
+  const [state, send] = useMachine(uploadManagerMachine)
 
   const onDrop = useCallback(
     (acceptedFiles: Array<File>) => {
@@ -27,7 +29,7 @@ function App() {
           <p>
             {isDragActive
               ? 'Drop the files!'
-              : "Drag and drop or click to select files"}
+              : 'Drag and drop or click to select files'}
           </p>
         </div>
         {state.matches('failedToGetUploadUrl') && (
@@ -38,26 +40,38 @@ function App() {
       <div className={styles.uploadedFilesContainer}>
         <h2>Uploaded files</h2>
         <ul className={styles.uploadedFilesList}>
-          {state.context.trackedFiles.map((trackedFile) => (
-            <li key={trackedFile.id} className={styles.uploadedFilesListItem}>
-              <FileIcon className={styles.fileIcon} />
-              <div className={styles.uploadedFilesListItemContent}>
-                  <p className={styles.uploadedFilesListItemName}>
-                    {trackedFile.file.name}
-                  </p>
-
-                <p className={styles.uploadedFilesListItemProgress}>
-                  {trackedFile.progress}%
-                </p>
-              </div>
-              <button aria-label="Cancel upload" className={styles.closeButton}>
-                <CloseIcon />
-              </button>
-            </li>
+          {state.context.uploadFiles.map((uploadFile) => (
+            <UploadFileListItem
+              key={uploadFile.actor.id}
+              uploadFile={uploadFile}
+            />
           ))}
         </ul>
       </div>
     </main>
+  )
+}
+
+function UploadFileListItem({ uploadFile }: { uploadFile: UploadFile }) {
+  const progress = useSelector(
+    uploadFile.actor,
+    (snapshot) => snapshot.context.progress
+  )
+
+  return (
+    <li key={uploadFile.actor.id} className={styles.uploadedFilesListItem}>
+      <FileIcon className={styles.fileIcon} />
+      <div className={styles.uploadedFilesListItemContent}>
+        <p className={styles.uploadedFilesListItemName}>
+          {uploadFile.file.name}
+        </p>
+
+        <p className={styles.uploadedFilesListItemProgress}>{progress}%</p>
+      </div>
+      <button aria-label="Cancel upload" className={styles.closeButton}>
+        <CloseIcon />
+      </button>
+    </li>
   )
 }
 

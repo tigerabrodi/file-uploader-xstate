@@ -1,1 +1,2 @@
-export * from './uploadMachine'
+export * from './UploadFileMachine'
+export * from './UploadManagerMachine'
