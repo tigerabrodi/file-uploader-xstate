@@ -38,6 +38,6 @@ export const uploadFile = async ({
   }
 }
 
-export const notifyCompletion = async (id: string): Promise<void> => {
+export const notifyCompletion = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 300))
 }
