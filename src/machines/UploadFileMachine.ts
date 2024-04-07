@@ -2,7 +2,7 @@ import type { ActorRefFrom, BaseActorRef } from 'xstate'
 
 import { assign, fromPromise, setup } from 'xstate'
 
-import { uploadFile } from '../api'
+import { notifyCompletion, uploadFile } from '../api'
 
 type Status =
   | {
@@ -69,6 +69,7 @@ export const uploadFileMachine = setup({
     },
   },
   actors: {
+    notifyCompletion: fromPromise(notifyCompletion),
     uploadCurrentFile: fromPromise(async ({ input }) => {
       const { context, parent, uploadUrl } = input as {
         context: UploadFileContext
@@ -124,8 +125,10 @@ export const uploadFileMachine = setup({
           uploadUrl: (event as { uploadUrl: string }).uploadUrl,
         }),
         onDone: {
-          actions: 'updateFileToSuccess',
-          target: 'success',
+          actions: {
+            type: 'updateFileToSuccess',
+          },
+          target: 'notifying',
         },
         onError: {
           actions: 'updateFileToError',
@@ -145,6 +148,24 @@ export const uploadFileMachine = setup({
           },
           target: 'success',
         },
+      },
+    },
+
+    notifying: {
+      invoke: {
+        src: 'notifyCompletion',
+        onDone: {
+          target: 'success',
+        },
+        onError: {
+          target: 'notificationFailed',
+        },
+      },
+    },
+
+    notificationFailed: {
+      always: {
+        actions: 'updateFileToError',
       },
     },
 
