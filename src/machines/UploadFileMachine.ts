@@ -6,11 +6,19 @@ import { uploadFile } from '../api'
 
 export type UploadFileActor = ActorRefFrom<typeof uploadFileMachine>
 
+type Status =
+  | {
+      status: 'idle' | 'uploading' | 'success'
+    }
+  | {
+      status: 'failed'
+      errorMessage: string
+    }
+
 export type UploadFileContext = {
   file: File | null
   progress: number
-  status: 'idle' | 'uploading' | 'success' | 'failed'
-}
+} & Status
 
 type UploadFileInput = {
   file: File
@@ -40,6 +48,7 @@ export const uploadFileMachine = setup({
     }),
     updateFileToError: assign({
       status: 'failed',
+      errorMessage: 'Failed to upload file. Please try again.',
     }),
     updateFileProgress: assign(
       (

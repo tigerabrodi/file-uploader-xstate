@@ -53,24 +53,34 @@ function App() {
 }
 
 function UploadFileListItem({ uploadFile }: { uploadFile: UploadFile }) {
-  const progress = useSelector(
-    uploadFile.actor,
-    (snapshot) => snapshot.context.progress
-  )
+  const context = useSelector(uploadFile.actor, (snapshot) => snapshot.context)
+
+  console.log('status', status)
 
   return (
-    <li key={uploadFile.actor.id} className={styles.uploadedFilesListItem}>
+    <li
+      key={uploadFile.actor.id}
+      className={`${styles.uploadedFilesListItem} ${context.status === 'failed' ? styles.failed : ''}`}
+    >
       <FileIcon className={styles.fileIcon} />
       <div className={styles.uploadedFilesListItemContent}>
         <p className={styles.uploadedFilesListItemName}>
           {uploadFile.file.name}
         </p>
 
-        <p className={styles.uploadedFilesListItemProgress}>{progress}%</p>
+        <p className={styles.uploadedFilesListItemProgress}>
+          {context.progress}%
+        </p>
       </div>
       <button aria-label="Cancel upload" className={styles.closeButton}>
         <CloseIcon />
       </button>
+
+      {context.status === 'failed' && (
+        <p className={styles.uploadedFilesListItemError}>
+          {context.errorMessage}
+        </p>
+      )}
     </li>
   )
 }
