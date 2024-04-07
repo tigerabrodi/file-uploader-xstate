@@ -2,6 +2,7 @@ import { useMachine } from '@xstate/react'
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 
+import styles from './App.module.css'
 import { CloseIcon, FileIcon } from './icons'
 import { uploadMachine } from './machines'
 
@@ -19,14 +20,14 @@ function App() {
 
   return (
     <main>
-      <div>
+      <div className={styles.dragContainer}>
         <h1>Upload files</h1>
-        <div {...getRootProps()}>
+        <div {...getRootProps()} className={styles.dropzone}>
           <input {...getInputProps()} />
           <p>
             {isDragActive
-              ? 'Drop the files here ...'
-              : "Drag 'n' drop some files here, or click to select files"}
+              ? 'Drop the files!'
+              : "Drag and drop or click to select files"}
           </p>
         </div>
         {state.matches('failedToGetUploadUrl') && (
@@ -34,22 +35,22 @@ function App() {
         )}
       </div>
 
-      <div>
+      <div className={styles.uploadedFilesContainer}>
         <h2>Uploaded files</h2>
-        <ul>
+        <ul className={styles.uploadedFilesList}>
           {state.context.trackedFiles.map((trackedFile) => (
-            <li key={trackedFile.id}>
-              <FileIcon />
-              <div>
-                <div>
-                  <p>{trackedFile.file.name}</p>
-                  <p>{trackedFile.file.size} bytes</p>
-                </div>
+            <li key={trackedFile.id} className={styles.uploadedFilesListItem}>
+              <FileIcon className={styles.fileIcon} />
+              <div className={styles.uploadedFilesListItemContent}>
+                  <p className={styles.uploadedFilesListItemName}>
+                    {trackedFile.file.name}
+                  </p>
 
-                <p>{trackedFile.state}</p>
-                <p>{trackedFile.progress}%</p>
+                <p className={styles.uploadedFilesListItemProgress}>
+                  {trackedFile.progress}%
+                </p>
               </div>
-              <button aria-label="Cancel upload">
+              <button aria-label="Cancel upload" className={styles.closeButton}>
                 <CloseIcon />
               </button>
             </li>
