@@ -20,6 +20,10 @@ function App() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
+  function onCancelFileUpload(actorId: string) {
+    send({ type: 'CANCEL_FILE_UPLOAD', actorId })
+  }
+
   return (
     <main>
       <div className={styles.dragContainer}>
@@ -44,6 +48,7 @@ function App() {
             <UploadFileListItem
               key={uploadFile.actor.id}
               uploadFile={uploadFile}
+              onCancelFileUpload={onCancelFileUpload}
             />
           ))}
         </ul>
@@ -52,7 +57,15 @@ function App() {
   )
 }
 
-function UploadFileListItem({ uploadFile }: { uploadFile: UploadFile }) {
+type UploadFileListItemProps = {
+  uploadFile: UploadFile
+  onCancelFileUpload: (actorId: string) => void
+}
+
+function UploadFileListItem({
+  uploadFile,
+  onCancelFileUpload,
+}: UploadFileListItemProps) {
   const context = useSelector(uploadFile.actor, (snapshot) => snapshot.context)
 
   console.log('status', status)
@@ -72,7 +85,11 @@ function UploadFileListItem({ uploadFile }: { uploadFile: UploadFile }) {
           {context.progress}%
         </p>
       </div>
-      <button aria-label="Cancel upload" className={styles.closeButton}>
+      <button
+        aria-label="Cancel upload"
+        className={styles.closeButton}
+        onClick={() => onCancelFileUpload(uploadFile.actor.id)}
+      >
         <CloseIcon />
       </button>
 

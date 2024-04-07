@@ -78,6 +78,35 @@ export const uploadManagerMachine = setup({
         })
       })
     },
+
+    cancelFileUpload: assign(
+      (
+        { context },
+        params: {
+          actorId: string
+        }
+      ) => {
+        const uploadFileToBeCancelled = context.uploadFiles.find(
+          (uploadFile) => uploadFile.actor.id === params.actorId
+        )
+
+        if (!uploadFileToBeCancelled) {
+          return {}
+        }
+
+        uploadFileToBeCancelled.actor.send({
+          type: 'CANCEL_CURRENT_FILE_UPLOAD',
+        })
+
+        const newUploadFiles = context.uploadFiles.filter(
+          (uploadFile) => uploadFile.actor.id !== params.actorId
+        )
+
+        return {
+          uploadFiles: newUploadFiles,
+        }
+      }
+    ),
   },
   actors: {
     getUploadUrl: fromPromise(getUploadUrl),
@@ -122,6 +151,14 @@ export const uploadManagerMachine = setup({
 
     uploadAllFiles: {
       entry: 'uploadAllFiles',
+      on: {
+        CANCEL_FILE_UPLOAD: {
+          actions: {
+            type: 'cancelFileUpload',
+            params: ({ event }) => ({ actorId: event.actorId }),
+          },
+        },
+      },
     },
 
     failedToGetUploadUrl: {

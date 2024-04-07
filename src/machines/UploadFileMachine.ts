@@ -4,8 +4,6 @@ import { assign, fromPromise, setup } from 'xstate'
 
 import { uploadFile } from '../api'
 
-export type UploadFileActor = ActorRefFrom<typeof uploadFileMachine>
-
 type Status =
   | {
       status: 'idle' | 'uploading' | 'success'
@@ -18,6 +16,7 @@ type Status =
 export type UploadFileContext = {
   file: File | null
   progress: number
+  abortController: AbortController
 } & Status
 
 type UploadFileInput = {
@@ -65,6 +64,9 @@ export const uploadFileMachine = setup({
     stopActor: ({ self }) => {
       self.stop()
     },
+    cancelFileUpload: ({ context }) => {
+      context.abortController.abort()
+    },
   },
   actors: {
     uploadCurrentFile: fromPromise(async ({ input }) => {
@@ -88,7 +90,7 @@ export const uploadFileMachine = setup({
             type: 'CANCEL_CURRENT_FILE_UPLOAD',
           })
         },
-        signal: new AbortController().signal,
+        signal: context.abortController.signal,
       })
     }),
   },
@@ -102,6 +104,7 @@ export const uploadFileMachine = setup({
       file,
       progress: 0,
       status: 'idle',
+      abortController: new AbortController(),
     }
   },
   states: {
@@ -136,12 +139,12 @@ export const uploadFileMachine = setup({
             params: ({ event }) => ({ progress: event.progress }),
           },
         },
-        // CANCEL_CURRENT_FILE_UPLOAD: {
-        //   actions: sendTo(
-        //     ({ event }) => event.actorId,
-        //     () => ({ type: 'CANCEL_FILE_UPLOAD' })
-        //   ),
-        // },
+        CANCEL_CURRENT_FILE_UPLOAD: {
+          actions: {
+            type: 'cancelFileUpload',
+          },
+          target: 'success',
+        },
       },
     },
 
@@ -151,3 +154,5 @@ export const uploadFileMachine = setup({
     },
   },
 })
+
+export type UploadFileActor = ActorRefFrom<typeof uploadFileMachine>
