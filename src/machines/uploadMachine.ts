@@ -95,23 +95,47 @@ export const uploadMachine = setup({
     }),
     setCurrentFileToUploading: assign({
       trackedFiles: ({ context }) => {
-        const currentFile = context.trackedFiles[context.currentFileIndex]
-        currentFile.state = 'uploading'
-        return context.trackedFiles
+        return context.trackedFiles.map((trackedFile) => {
+          if (
+            trackedFile.id === context.trackedFiles[context.currentFileIndex].id
+          ) {
+            return {
+              ...trackedFile,
+              state: 'uploading' as const,
+            }
+          }
+          return trackedFile
+        })
       },
     }),
     updateFileToError: assign({
       trackedFiles: ({ context }) => {
-        const currentFile = context.trackedFiles[context.currentFileIndex]
-        currentFile.state = 'failed'
-        return context.trackedFiles
+        return context.trackedFiles.map((trackedFile) => {
+          if (
+            trackedFile.id === context.trackedFiles[context.currentFileIndex].id
+          ) {
+            return {
+              ...trackedFile,
+              state: 'failed' as const,
+            }
+          }
+          return trackedFile
+        })
       },
     }),
     updateFileToSuccess: assign({
       trackedFiles: ({ context }) => {
-        const currentFile = context.trackedFiles[context.currentFileIndex]
-        currentFile.state = 'success'
-        return context.trackedFiles
+        return context.trackedFiles.map((trackedFile) => {
+          if (
+            trackedFile.id === context.trackedFiles[context.currentFileIndex].id
+          ) {
+            return {
+              ...trackedFile,
+              state: 'success' as const,
+            }
+          }
+          return trackedFile
+        })
       },
     }),
   },
@@ -124,8 +148,6 @@ export const uploadMachine = setup({
         file: context.trackedFiles[context.currentFileIndex].file,
         url: context.uploadUrl,
         onProgress: (progress: number) => {
-          // this ends up being 1, so that's correct
-          console.log('progress', progress)
           self.send({
             type: 'UPDATE_CURRENT_FILE_PROGRESS',
             progress: Math.round(progress * 100),
@@ -233,16 +255,6 @@ export const uploadMachine = setup({
               target: 'uploadsComplete',
             },
           ],
-        },
-        updateFileToError: {
-          entry: assign({
-            trackedFiles: ({ context }) => {
-              const currentFile = context.trackedFiles[context.currentFileIndex]
-              currentFile.state = 'failed'
-              return context.trackedFiles
-            },
-          }),
-          target: 'checkNextFile',
         },
 
         uploadsComplete: {
