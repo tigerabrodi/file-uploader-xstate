@@ -111,6 +111,7 @@ function UploadFileListItem({
           </p>
         )}
       </div>
+
       {context.status === 'uploading' && (
         <button
           aria-label={`Cancel file upload ${uploadFile.file.name}`}
