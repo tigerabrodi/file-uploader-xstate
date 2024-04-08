@@ -6,7 +6,7 @@ import { notifyCompletion, uploadFile } from '../api'
 
 type Status =
   | {
-      status: 'idle' | 'uploading' | 'success'
+      status: 'idle' | 'uploading' | 'uploaded'
     }
   | {
       status: 'failed'
@@ -42,6 +42,9 @@ export type UploadFileEvents =
       type: 'UPDATE_ABORT_CONTROLLER'
       abortController: AbortController
     }
+  | {
+      type: 'DELETE_FILE_UPLOAD'
+    }
 
 export const uploadFileMachine = setup({
   types: {
@@ -60,8 +63,8 @@ export const uploadFileMachine = setup({
       errorMessage: '',
       abortController: new AbortController(),
     }),
-    updateFileToSuccess: assign({
-      status: 'success',
+    updateFileToUploaded: assign({
+      status: 'uploaded',
     }),
     updateFileToError: assign({
       status: 'failed',
@@ -149,7 +152,7 @@ export const uploadFileMachine = setup({
         }),
         onDone: {
           actions: {
-            type: 'updateFileToSuccess',
+            type: 'updateFileToUploaded',
           },
           target: 'notifying',
         },
@@ -169,7 +172,7 @@ export const uploadFileMachine = setup({
           actions: {
             type: 'cancelFileUpload',
           },
-          target: 'success',
+          target: 'finished',
         },
         RETRY_FILE_UPLOAD: {
           target: 'uploading',
@@ -188,7 +191,7 @@ export const uploadFileMachine = setup({
       invoke: {
         src: 'notifyCompletion',
         onDone: {
-          target: 'success',
+          target: 'uploaded',
         },
         onError: {
           target: 'notificationFailed',
@@ -202,9 +205,14 @@ export const uploadFileMachine = setup({
       },
     },
 
-    success: {
-      entry: 'stopActor',
-      type: 'final',
+    uploaded: {
+      on: {
+        DELETE_FILE_UPLOAD: {
+          actions: {
+            type: 'stopActor',
+          },
+        },
+      },
     },
   },
 })

@@ -25,13 +25,11 @@ export const uploadFile = async ({
   let uploadedSize = 0
 
   while (uploadedSize < totalSize) {
-    await new Promise((resolve) => setTimeout(resolve, 800))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
-    uploadedSize += totalSize * 0.2
+    uploadedSize += totalSize * (0.1 + Math.random() * 0.2)
 
     const progress = Math.min(uploadedSize / totalSize, 1)
-
-    console.log('progress from inner uploadFile', progress)
 
     if (signal.aborted) {
       break

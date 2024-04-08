@@ -30,6 +30,10 @@ type UploadManagerEvents =
       type: 'RETRY_FILE_UPLOAD'
       actorId: string
     }
+  | {
+      type: 'DELETE_FILE_UPLOAD'
+      actorId: string
+    }
 
 export const uploadManagerMachine = setup({
   types: {
@@ -109,6 +113,35 @@ export const uploadManagerMachine = setup({
       })
     },
 
+    deleteFileUpload: assign(
+      (
+        { context },
+        params: {
+          actorId: string
+        }
+      ) => {
+        const uploadFileToBeDeleted = context.uploadFiles.find(
+          (uploadFile) => uploadFile.actor.id === params.actorId
+        )
+
+        if (!uploadFileToBeDeleted) {
+          return {}
+        }
+
+        uploadFileToBeDeleted.actor.send({
+          type: 'DELETE_FILE_UPLOAD',
+        })
+
+        const newUploadFiles = context.uploadFiles.filter(
+          (uploadFile) => uploadFile.actor.id !== params.actorId
+        )
+
+        return {
+          uploadFiles: newUploadFiles,
+        }
+      }
+    ),
+
     cancelFileUpload: assign(
       (
         { context },
@@ -159,8 +192,6 @@ export const uploadManagerMachine = setup({
             actor,
           }
         })
-
-        console.log('newUploadFiles', newUploadFiles)
 
         return {
           uploadFiles: [...context.uploadFiles, ...newUploadFiles],
@@ -224,7 +255,6 @@ export const uploadManagerMachine = setup({
             params: ({ event }) => ({ actorId: event.actorId }),
           },
         },
-        // How do we select files again and handle new uploads?
         SELECT_FILES: {
           actions: {
             type: 'appendNewFiles',
@@ -232,6 +262,12 @@ export const uploadManagerMachine = setup({
           },
           target: 'uploadAllFiles',
           reenter: true,
+        },
+        DELETE_FILE_UPLOAD: {
+          actions: {
+            type: 'deleteFileUpload',
+            params: ({ event }) => ({ actorId: event.actorId }),
+          },
         },
       },
     },

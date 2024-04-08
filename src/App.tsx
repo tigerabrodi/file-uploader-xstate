@@ -5,8 +5,7 @@ import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 
 import styles from './App.module.css'
-import { CloseIcon, FileIcon } from './icons'
-import { Spinner } from './icons/Spinner'
+import { CloseIcon, FileIcon, Spinner, Trash } from './icons'
 import { uploadManagerMachine } from './machines/UploadManagerMachine'
 
 function App() {
@@ -27,6 +26,10 @@ function App() {
 
   function onRetryFileUpload(actorId: string) {
     send({ type: 'RETRY_FILE_UPLOAD', actorId })
+  }
+
+  function onDeleteFileUpload(actorId: string) {
+    send({ type: 'DELETE_FILE_UPLOAD', actorId })
   }
 
   return (
@@ -55,6 +58,7 @@ function App() {
               uploadFile={uploadFile}
               onCancelFileUpload={onCancelFileUpload}
               onRetryFileUpload={onRetryFileUpload}
+              onDeleteFileUpload={onDeleteFileUpload}
             />
           ))}
         </ul>
@@ -67,16 +71,16 @@ type UploadFileListItemProps = {
   uploadFile: UploadFile
   onCancelFileUpload: (actorId: string) => void
   onRetryFileUpload: (actorId: string) => void
+  onDeleteFileUpload: (actorId: string) => void
 }
 
 function UploadFileListItem({
   uploadFile,
   onCancelFileUpload,
   onRetryFileUpload,
+  onDeleteFileUpload,
 }: UploadFileListItemProps) {
   const context = useSelector(uploadFile.actor, (snapshot) => snapshot.context)
-
-  console.log('status', status)
 
   return (
     <li
@@ -99,9 +103,19 @@ function UploadFileListItem({
           </p>
         )}
       </div>
+      {context.status === 'uploading' && (
+        <button
+          aria-label="Cancel file upload"
+          className={`${styles.button} ${styles.destroyButton}`}
+          onClick={() => onCancelFileUpload(uploadFile.actor.id)}
+        >
+          <CloseIcon />
+        </button>
+      )}
+
       {context.status === 'failed' && (
         <button
-          aria-label="Retry upload"
+          aria-label="Retry file upload"
           className={`${styles.button} ${styles.retryButton}`}
           onClick={() => onRetryFileUpload(uploadFile.actor.id)}
         >
@@ -109,13 +123,13 @@ function UploadFileListItem({
         </button>
       )}
 
-      {context.status === 'uploading' && (
+      {context.status === 'uploaded' && (
         <button
-          aria-label="Cancel upload"
+          aria-label="Delete file"
           className={`${styles.button} ${styles.destroyButton}`}
-          onClick={() => onCancelFileUpload(uploadFile.actor.id)}
+          onClick={() => onDeleteFileUpload(uploadFile.actor.id)}
         >
-          <CloseIcon />
+          <Trash />
         </button>
       )}
     </li>
