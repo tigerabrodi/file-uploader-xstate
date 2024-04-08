@@ -95,11 +95,6 @@ export const uploadFileMachine = setup({
             progress: progress,
           })
         },
-        onCancel: () => {
-          parent.send({
-            type: 'CANCEL_FILE_UPLOAD',
-          })
-        },
         signal: context.abortController.signal,
       })
     }),
