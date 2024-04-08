@@ -169,10 +169,14 @@ export const uploadFileMachine = setup({
           },
         },
         CANCEL_FILE_UPLOAD: {
-          actions: {
-            type: 'cancelFileUpload',
-          },
-          target: 'finished',
+          actions: [
+            {
+              type: 'cancelFileUpload',
+            },
+            {
+              type: 'stopActor',
+            },
+          ],
         },
         RETRY_FILE_UPLOAD: {
           target: 'uploading',
