@@ -75,7 +75,13 @@ export const uploadManagerMachine = setup({
     ),
 
     uploadAllFiles: ({ context }) => {
-      context.uploadFiles.forEach((uploadFile) => {
+      const actorsToUpload = context.uploadFiles.filter((uploadFile) => {
+        const isIdle = uploadFile.actor.getSnapshot().context.status === 'idle'
+
+        return isIdle
+      })
+
+      actorsToUpload.forEach((uploadFile) => {
         uploadFile.actor.send({
           type: 'UPLOAD',
           uploadUrl: context.uploadUrl,
@@ -122,6 +128,34 @@ export const uploadManagerMachine = setup({
 
         return {
           uploadFiles: newUploadFiles,
+        }
+      }
+    ),
+
+    appendNewFiles: assign(
+      (
+        { context },
+        params: {
+          files: Array<File>
+        }
+      ) => {
+        const newUploadFiles = params.files.map((file) => {
+          const actor = createActor(uploadFileMachine, {
+            input: {
+              file,
+            },
+          }) as UploadFileActor
+
+          actor.start()
+
+          return {
+            file,
+            actor,
+          }
+        })
+
+        return {
+          uploadFiles: [...context.uploadFiles, ...newUploadFiles],
         }
       }
     ),
@@ -181,6 +215,15 @@ export const uploadManagerMachine = setup({
             type: 'retryFileUpload',
             params: ({ event }) => ({ actorId: event.actorId }),
           },
+        },
+        // How do we select files again and handle new uploads?
+        SELECT_FILES: {
+          actions: {
+            type: 'appendNewFiles',
+            params: ({ event }) => ({ files: event.files }),
+          },
+          target: 'uploadAllFiles',
+          reenter: true,
         },
       },
     },
