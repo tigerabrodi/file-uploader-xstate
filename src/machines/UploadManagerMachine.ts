@@ -26,6 +26,10 @@ type UploadManagerEvents =
       type: 'CANCEL_FILE_UPLOAD'
       actorId: string
     }
+  | {
+      type: 'RETRY_FILE_UPLOAD'
+      actorId: string
+    }
 
 export const uploadManagerMachine = setup({
   types: {
@@ -76,6 +80,20 @@ export const uploadManagerMachine = setup({
           type: 'UPLOAD',
           uploadUrl: context.uploadUrl,
         })
+      })
+    },
+
+    retryFileUpload: ({ context }, params: { actorId: string }) => {
+      const uploadFileToBeRetried = context.uploadFiles.find(
+        (uploadFile) => uploadFile.actor.id === params.actorId
+      )
+
+      if (!uploadFileToBeRetried) {
+        return {}
+      }
+
+      uploadFileToBeRetried.actor.send({
+        type: 'RETRY_CURRENT_FILE_UPLOAD',
       })
     },
 
@@ -155,6 +173,12 @@ export const uploadManagerMachine = setup({
         CANCEL_FILE_UPLOAD: {
           actions: {
             type: 'cancelFileUpload',
+            params: ({ event }) => ({ actorId: event.actorId }),
+          },
+        },
+        RETRY_FILE_UPLOAD: {
+          actions: {
+            type: 'retryFileUpload',
             params: ({ event }) => ({ actorId: event.actorId }),
           },
         },

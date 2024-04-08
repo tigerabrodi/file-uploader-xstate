@@ -35,6 +35,9 @@ export type UploadFileEvents =
   | {
       type: 'CANCEL_CURRENT_FILE_UPLOAD'
     }
+  | {
+      type: 'RETRY_CURRENT_FILE_UPLOAD'
+    }
 
 export const uploadFileMachine = setup({
   types: {
@@ -42,12 +45,18 @@ export const uploadFileMachine = setup({
     events: {} as UploadFileEvents,
   },
   actions: {
+    updateFileToUploading: assign({
+      progress: 0,
+      status: 'uploading',
+      errorMessage: '',
+      abortController: new AbortController(),
+    }),
     updateFileToSuccess: assign({
       status: 'success',
     }),
     updateFileToError: assign({
       status: 'failed',
-      errorMessage: 'Failed to upload file. Please try again.',
+      errorMessage: 'Upload failed. Please try again.',
     }),
     updateFileProgress: assign(
       (
@@ -117,6 +126,9 @@ export const uploadFileMachine = setup({
       },
     },
     uploading: {
+      entry: {
+        type: 'updateFileToUploading',
+      },
       invoke: {
         src: 'uploadCurrentFile',
         input: ({ context, self, event }) => ({
@@ -147,6 +159,10 @@ export const uploadFileMachine = setup({
             type: 'cancelFileUpload',
           },
           target: 'success',
+        },
+        RETRY_CURRENT_FILE_UPLOAD: {
+          target: 'uploading',
+          reenter: true,
         },
       },
     },
