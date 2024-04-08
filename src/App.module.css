@@ -50,7 +50,7 @@ main {
   margin-top: 200px;
 
   h2 {
-    font-size: calc(1rem * 26 / 16);
+    font-size: calc(1rem * 24 / 16);
     color: var(--colors-neutral--900);
     font-weight: 700;
   }
@@ -146,4 +146,15 @@ main {
   font-size: calc(1rem * 12 / 16);
   color: var(--colors-danger--600);
   margin-top: auto;
+}
+
+.uploadIcon {
+  width: 36px;
+  fill: var(--colors-primary--800);
+}
+
+.noFilesUploaded {
+  font-size: calc(1rem * 16 / 16);
+  color: var(--colors-neutral--800);
+  margin-top: 50px;
 }

@@ -5,7 +5,7 @@ import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 
 import styles from './App.module.css'
-import { CloseIcon, FileIcon, Spinner, Trash } from './icons'
+import { CloseIcon, FileIcon, Spinner, Trash, Upload } from './icons'
 import { uploadManagerMachine } from './machines/UploadManagerMachine'
 
 function App() {
@@ -38,6 +38,7 @@ function App() {
         <h1>Upload files</h1>
         <div {...getRootProps()} className={styles.dropzone}>
           <input {...getInputProps()} />
+          <Upload className={styles.uploadIcon} />
           <p>
             {isDragActive
               ? 'Drop the files!'
@@ -51,17 +52,21 @@ function App() {
 
       <div className={styles.uploadedFilesContainer}>
         <h2>Uploaded files</h2>
-        <ul className={styles.uploadedFilesList}>
-          {state.context.uploadFiles.map((uploadFile) => (
-            <UploadFileListItem
-              key={uploadFile.actor.id}
-              uploadFile={uploadFile}
-              onCancelFileUpload={onCancelFileUpload}
-              onRetryFileUpload={onRetryFileUpload}
-              onDeleteFileUpload={onDeleteFileUpload}
-            />
-          ))}
-        </ul>
+        {state.context.uploadFiles.length > 0 ? (
+          <ul className={styles.uploadedFilesList}>
+            {state.context.uploadFiles.map((uploadFile) => (
+              <UploadFileListItem
+                key={uploadFile.actor.id}
+                uploadFile={uploadFile}
+                onCancelFileUpload={onCancelFileUpload}
+                onRetryFileUpload={onRetryFileUpload}
+                onDeleteFileUpload={onDeleteFileUpload}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className={styles.noFilesUploaded}>No files uploaded yet</p>
+        )}
       </div>
     </main>
   )
