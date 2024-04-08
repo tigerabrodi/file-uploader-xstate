@@ -154,7 +154,7 @@ main {
 }
 
 .noFilesUploaded {
-  font-size: calc(1rem * 16 / 16);
+  font-size: calc(1rem * 14 / 16);
   color: var(--colors-neutral--800);
   margin-top: 50px;
 }
