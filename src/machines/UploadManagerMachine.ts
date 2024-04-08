@@ -93,7 +93,7 @@ export const uploadManagerMachine = setup({
       }
 
       uploadFileToBeRetried.actor.send({
-        type: 'RETRY_CURRENT_FILE_UPLOAD',
+        type: 'RETRY_FILE_UPLOAD',
       })
     },
 
@@ -113,7 +113,7 @@ export const uploadManagerMachine = setup({
         }
 
         uploadFileToBeCancelled.actor.send({
-          type: 'CANCEL_CURRENT_FILE_UPLOAD',
+          type: 'CANCEL_FILE_UPLOAD',
         })
 
         const newUploadFiles = context.uploadFiles.filter(

@@ -29,14 +29,14 @@ export type UploadFileEvents =
       uploadUrl: string
     }
   | {
-      type: 'UPDATE_CURRENT_FILE_PROGRESS'
+      type: 'UPDATE_FILE_PROGRESS'
       progress: number
     }
   | {
-      type: 'CANCEL_CURRENT_FILE_UPLOAD'
+      type: 'CANCEL_FILE_UPLOAD'
     }
   | {
-      type: 'RETRY_CURRENT_FILE_UPLOAD'
+      type: 'RETRY_FILE_UPLOAD'
     }
 
 export const uploadFileMachine = setup({
@@ -91,13 +91,13 @@ export const uploadFileMachine = setup({
         url: uploadUrl,
         onProgress: (progress: number) => {
           parent.send({
-            type: 'UPDATE_CURRENT_FILE_PROGRESS',
+            type: 'UPDATE_FILE_PROGRESS',
             progress: progress,
           })
         },
         onCancel: () => {
           parent.send({
-            type: 'CANCEL_CURRENT_FILE_UPLOAD',
+            type: 'CANCEL_FILE_UPLOAD',
           })
         },
         signal: context.abortController.signal,
@@ -148,19 +148,19 @@ export const uploadFileMachine = setup({
       },
 
       on: {
-        UPDATE_CURRENT_FILE_PROGRESS: {
+        UPDATE_FILE_PROGRESS: {
           actions: {
             type: 'updateFileProgress',
             params: ({ event }) => ({ progress: event.progress }),
           },
         },
-        CANCEL_CURRENT_FILE_UPLOAD: {
+        CANCEL_FILE_UPLOAD: {
           actions: {
             type: 'cancelFileUpload',
           },
           target: 'success',
         },
-        RETRY_CURRENT_FILE_UPLOAD: {
+        RETRY_FILE_UPLOAD: {
           target: 'uploading',
           reenter: true,
         },
