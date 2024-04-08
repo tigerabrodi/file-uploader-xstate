@@ -118,7 +118,7 @@ main {
 }
 
 .retryButton {
-  background-color: var(--colors-neutral--300);
+  background-color: var(--colors-neutral--400);
   svg {
     path {
       fill: var(--colors-neutral--800);
