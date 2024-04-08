@@ -74,24 +74,26 @@ main {
   border: 2px solid var(--colors-primary--500);
   border-radius: 5px;
   position: relative;
+  height: 100px;
 }
 
 .fileIcon {
   width: 34px;
   path {
-    stroke: var(--colors-primary--900);
+    stroke: var(--colors-primary--800);
   }
 }
 
 .uploadedFilesListItemContent {
   display: flex;
   flex-direction: column;
-  row-gap: 8px;
+  height: 100%;
+  row-gap: 6px;
 }
 
 .uploadedFilesListItemName {
   font-size: calc(1rem * 14 / 16);
-  color: var(--colors-primary--900);
+  color: var(--colors-primary--800);
   font-weight: 700;
 }
 
@@ -100,21 +102,35 @@ main {
   color: var(--colors-primary--600);
 }
 
-.closeButton {
+.button {
   margin-left: auto;
   border-radius: 100%;
-  border: 2px solid var(--colors-danger--500);
 
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
 
   svg {
-    width: 14px;
+    width: 16px;
+  }
+}
+
+.retryButton {
+  background-color: var(--colors-neutral--300);
+  svg {
     path {
-      fill: var(--colors-danger--600);
+      fill: var(--colors-neutral--800);
+    }
+  }
+}
+
+.destroyButton {
+  background-color: var(--colors-danger--300);
+  svg {
+    path {
+      fill: var(--colors-danger--800);
     }
   }
 }
@@ -124,9 +140,7 @@ main {
 }
 
 .uploadedFilesListItemError {
-  position: absolute;
-  bottom: -20px;
-  left: 16px;
   font-size: calc(1rem * 12 / 16);
   color: var(--colors-danger--600);
+  margin-top: auto;
 }
