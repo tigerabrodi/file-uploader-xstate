@@ -86,6 +86,9 @@ function UploadFileListItem({
     <li
       key={uploadFile.actor.id}
       className={`${styles.uploadedFilesListItem} ${context.status === 'failed' ? styles.failed : ''}`}
+      aria-describedby={
+        context.status === 'failed' ? `error-${uploadFile.actor.id}` : undefined
+      }
     >
       <FileIcon className={styles.fileIcon} />
       <div className={styles.uploadedFilesListItemContent}>
@@ -93,19 +96,24 @@ function UploadFileListItem({
           {uploadFile.file.name}
         </p>
 
-        <p className={styles.uploadedFilesListItemProgress}>
-          {context.progress}%
-        </p>
+        <progress
+          className={styles.uploadedFilesListItemProgress}
+          value={context.progress}
+          max="100"
+        />
 
         {context.status === 'failed' && (
-          <p className={styles.uploadedFilesListItemError}>
+          <p
+            id={`error-${uploadFile.actor.id}`}
+            className={styles.uploadedFilesListItemError}
+          >
             {context.errorMessage}
           </p>
         )}
       </div>
       {context.status === 'uploading' && (
         <button
-          aria-label="Cancel file upload"
+          aria-label={`Cancel file upload ${uploadFile.file.name}`}
           className={`${styles.button} ${styles.destroyButton}`}
           onClick={() => onCancelFileUpload(uploadFile.actor.id)}
         >
@@ -115,7 +123,7 @@ function UploadFileListItem({
 
       {context.status === 'failed' && (
         <button
-          aria-label="Retry file upload"
+          aria-label={`Retry file upload ${uploadFile.file.name}`}
           className={`${styles.button} ${styles.retryButton}`}
           onClick={() => onRetryFileUpload(uploadFile.actor.id)}
         >
@@ -125,7 +133,7 @@ function UploadFileListItem({
 
       {context.status === 'uploaded' && (
         <button
-          aria-label="Delete file"
+          aria-label={`Delete file ${uploadFile.file.name}`}
           className={`${styles.button} ${styles.destroyButton}`}
           onClick={() => onDeleteFileUpload(uploadFile.actor.id)}
         >
