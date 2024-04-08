@@ -31,6 +31,8 @@ export const uploadFile = async ({
 
     const progress = Math.min(uploadedSize / totalSize, 1)
 
+    console.log('progress from inner uploadFile', progress)
+
     if (signal.aborted) {
       break
     }

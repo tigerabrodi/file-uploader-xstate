@@ -75,14 +75,20 @@ export const uploadManagerMachine = setup({
     ),
 
     uploadAllFiles: ({ context }) => {
-      const actorsToUpload = context.uploadFiles.filter((uploadFile) => {
-        const isIdle = uploadFile.actor.getSnapshot().context.status === 'idle'
+      const actorsToUpload = context.uploadFiles
+        .map(({ actor }) => {
+          const snapshot = actor.getSnapshot()
 
-        return isIdle
-      })
+          if (snapshot.context.status === 'idle') {
+            return actor
+          }
 
-      actorsToUpload.forEach((uploadFile) => {
-        uploadFile.actor.send({
+          return null
+        })
+        .filter(Boolean) as Array<UploadFileActor>
+
+      actorsToUpload.forEach((actor) => {
+        actor.send({
           type: 'UPLOAD',
           uploadUrl: context.uploadUrl,
         })
@@ -153,6 +159,8 @@ export const uploadManagerMachine = setup({
             actor,
           }
         })
+
+        console.log('newUploadFiles', newUploadFiles)
 
         return {
           uploadFiles: [...context.uploadFiles, ...newUploadFiles],

@@ -74,7 +74,7 @@ export const uploadFileMachine = setup({
       self.stop()
     },
     cancelFileUpload: ({ context }) => {
-      context.abortController.abort()
+      context.abortController.abort('Upload cancelled by user')
     },
   },
   actors: {
@@ -86,10 +86,15 @@ export const uploadFileMachine = setup({
         uploadUrl: string
       }
 
+      console.log('uploadCurrentFile', context, parent, uploadUrl)
+
+      console.log('controller', context.abortController)
+
       await uploadFile({
         file: context.file!,
         url: uploadUrl,
         onProgress: (progress: number) => {
+          console.log('progress from uploadFile', progress)
           parent.send({
             type: 'UPDATE_FILE_PROGRESS',
             progress: progress,
