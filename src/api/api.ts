@@ -25,7 +25,7 @@ export const uploadFile = async ({
   let uploadedSize = 0
 
   while (uploadedSize < totalSize) {
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    await new Promise((resolve) => setTimeout(resolve, 800))
 
     uploadedSize += totalSize * 0.2
 

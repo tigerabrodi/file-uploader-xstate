@@ -16,7 +16,7 @@ type Status =
 export type UploadFileContext = {
   file: File | null
   progress: number
-  abortController: AbortController
+  abortController: AbortController | null
 } & Status
 
 type UploadFileInput = {
@@ -38,6 +38,10 @@ export type UploadFileEvents =
   | {
       type: 'RETRY_FILE_UPLOAD'
     }
+  | {
+      type: 'UPDATE_ABORT_CONTROLLER'
+      abortController: AbortController
+    }
 
 export const uploadFileMachine = setup({
   types: {
@@ -45,6 +49,11 @@ export const uploadFileMachine = setup({
     events: {} as UploadFileEvents,
   },
   actions: {
+    updateAbortController: assign(
+      (_, params: { abortController: AbortController }) => ({
+        abortController: params.abortController,
+      })
+    ),
     updateFileToUploading: assign({
       progress: 0,
       status: 'uploading',
@@ -74,7 +83,7 @@ export const uploadFileMachine = setup({
       self.stop()
     },
     cancelFileUpload: ({ context }) => {
-      context.abortController.abort('Upload cancelled by user')
+      context.abortController?.abort('Upload cancelled by user')
     },
   },
   actors: {
@@ -86,21 +95,23 @@ export const uploadFileMachine = setup({
         uploadUrl: string
       }
 
-      console.log('uploadCurrentFile', context, parent, uploadUrl)
+      const abortController = new AbortController()
 
-      console.log('controller', context.abortController)
+      parent.send({
+        type: 'UPDATE_ABORT_CONTROLLER',
+        abortController: abortController,
+      })
 
       await uploadFile({
         file: context.file!,
         url: uploadUrl,
         onProgress: (progress: number) => {
-          console.log('progress from uploadFile', progress)
           parent.send({
             type: 'UPDATE_FILE_PROGRESS',
             progress: progress,
           })
         },
-        signal: context.abortController.signal,
+        signal: abortController.signal,
       })
     }),
   },
@@ -114,7 +125,7 @@ export const uploadFileMachine = setup({
       file,
       progress: 0,
       status: 'idle',
-      abortController: new AbortController(),
+      abortController: null,
     }
   },
   states: {
@@ -163,6 +174,12 @@ export const uploadFileMachine = setup({
         RETRY_FILE_UPLOAD: {
           target: 'uploading',
           reenter: true,
+        },
+        UPDATE_ABORT_CONTROLLER: {
+          actions: {
+            type: 'updateAbortController',
+            params: ({ event }) => ({ abortController: event.abortController }),
+          },
         },
       },
     },
