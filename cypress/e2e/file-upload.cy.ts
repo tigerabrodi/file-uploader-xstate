@@ -9,6 +9,7 @@ it('Should upload, cancel, retry and delete files', () => {
   cy.findByText('No files uploaded yet').should('be.visible')
 
   // In the real world, we would mock the API calls using cy.intercept()
+  // Needed because of the initial request to get the upload URL
   cy.wait(500)
 
   cy.findByLabelText('Click to select files').selectFile(
