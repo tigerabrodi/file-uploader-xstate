@@ -60,25 +60,29 @@ export const uploadManagerMachine = setup({
         params: {
           files: Array<File>
         }
-      ) => ({
-        uploadFiles: params.files.map((file) => {
-          const actor = createActor(uploadFileMachine, {
-            input: {
+      ) => {
+        console.log('setUploadFiles')
+        return {
+          uploadFiles: params.files.map((file) => {
+            const actor = createActor(uploadFileMachine, {
+              input: {
+                file,
+              },
+            }) as UploadFileActor
+
+            actor.start()
+
+            return {
               file,
-            },
-          }) as UploadFileActor
-
-          actor.start()
-
-          return {
-            file,
-            actor,
-          }
-        }),
-      })
+              actor,
+            }
+          }),
+        }
+      }
     ),
 
     uploadAllFiles: ({ context }) => {
+      console.log('uploadAllFiles')
       const actorsToUpload = context.uploadFiles
         .map(({ actor }) => {
           const snapshot = actor.getSnapshot()
