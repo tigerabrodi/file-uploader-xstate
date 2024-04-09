@@ -1,8 +1,7 @@
 import type { UploadFile } from './machines/UploadManagerMachine'
+import type React from 'react'
 
 import { useMachine, useSelector } from '@xstate/react'
-import { useCallback } from 'react'
-import { useDropzone } from 'react-dropzone'
 
 import styles from './App.module.css'
 import { CloseIcon, FileIcon, Spinner, Trash, Upload } from './icons'
@@ -11,14 +10,16 @@ import { uploadManagerMachine } from './machines/UploadManagerMachine'
 function App() {
   const [state, send] = useMachine(uploadManagerMachine)
 
-  const onDrop = useCallback(
-    (acceptedFiles: Array<File>) => {
-      send({ type: 'SELECT_FILES', files: acceptedFiles })
-    },
-    [send]
-  )
+  function onFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    console.log('onFileUpload', event.target.files)
+    const files = event.target.files
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
+    if (!files) return
+
+    console.log('after if (!files) return', Array.from(files))
+
+    send({ type: 'SELECT_FILES', files: Array.from(files) })
+  }
 
   function onCancelFileUpload(actorId: string) {
     send({ type: 'CANCEL_FILE_UPLOAD', actorId })
@@ -36,15 +37,19 @@ function App() {
     <main>
       <div className={styles.dragContainer}>
         <h1>Upload files</h1>
-        <div {...getRootProps()} className={styles.dropzone}>
-          <input {...getInputProps()} />
+
+        <input
+          type="file"
+          id="file-upload"
+          className="sr-only"
+          multiple
+          onChange={onFileUpload}
+        />
+
+        <label htmlFor="file-upload" className={styles.uploadButton}>
           <Upload className={styles.uploadIcon} />
-          <p>
-            {isDragActive
-              ? 'Drop the files!'
-              : 'Drag and drop or click to select files'}
-          </p>
-        </div>
+          <p>Click to select files</p>
+        </label>
         {state.matches('failedToGetUploadUrl') && (
           <p>{state.context.errorMessage}</p>
         )}
@@ -87,6 +92,8 @@ function UploadFileListItem({
 }: UploadFileListItemProps) {
   const context = useSelector(uploadFile.actor, (snapshot) => snapshot.context)
 
+  console.log('context', context)
+
   return (
     <li
       key={uploadFile.actor.id}
@@ -104,8 +111,16 @@ function UploadFileListItem({
         <progress
           className={styles.uploadedFilesListItemProgress}
           value={context.progress}
-          max="100"
+          max={100}
+          aria-valuenow={context.progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-labelledby={`file-upload-status-${uploadFile.actor.id}`}
         />
+
+        <p id={`file-upload-status-${uploadFile.actor.id}`} className="sr-only">
+          Upload progress for {uploadFile.file.name}: {context.progress}%
+        </p>
 
         {context.status === 'failed' && (
           <p
