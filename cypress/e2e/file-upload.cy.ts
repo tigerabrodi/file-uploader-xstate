@@ -1,7 +1,7 @@
 const AVATAR_FILE = 'demo-avatar.webp'
 const GALAXY_FILE = 'galaxy.jpg'
 
-it('Should be able to create a chat, write messages and edit the chat.', () => {
+it('Should upload, cancel, retry and delete files', () => {
   cy.visit('/')
 
   cy.findByRole('heading', { name: 'Upload files' }).should('be.visible')
