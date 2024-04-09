@@ -19,7 +19,7 @@ main {
   }
 }
 
-.dropzone {
+.uploadButton {
   border: 2px dashed var(--colors-primary--500);
   border-radius: 8px;
   padding: 20px;
