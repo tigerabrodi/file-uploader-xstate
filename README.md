@@ -1,5 +1,7 @@
 # File Uploader built with XState
 
+File uploader built with XState. The file uploader allows you to upload multiple files concurrently. You can cancel, retry, and delete file uploads.
+
 # Journey
 
 ## New to XState
