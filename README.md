@@ -38,7 +38,7 @@ I decided to test like a real user would via E2E tests in a real browser. This w
 
 ## Accessibility
 
-As someone who cares about building accessible apps, I wanted to make sure the file uploader was accessible. I started off with React Dropzone, but it wasn't accessible. There weren't any accessible roles or labels. I didn't wanna modify it, so I rewrote it to use a native input and added some ARIA attributes to make it accessible.
+As someone who cares about building accessible apps, I wanted to make sure the file uploader was accessible. I started off with React Dropzone (which supports dragging and dropping files), but it wasn't accessible. There weren't any accessible roles or labels. I didn't wanna modify it to make it unnecessarily complex, so I rewrote it to use a native input and added some ARIA attributes to make it accessible.
 
 We lose the drag and drop functionality, but we gain accessibility.
 
