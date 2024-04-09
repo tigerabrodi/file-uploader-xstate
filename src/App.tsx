@@ -11,12 +11,9 @@ function App() {
   const [state, send] = useMachine(uploadManagerMachine)
 
   function onFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
-    console.log('onFileUpload', event.target.files)
     const files = event.target.files
 
     if (!files) return
-
-    console.log('after if (!files) return', Array.from(files))
 
     send({ type: 'SELECT_FILES', files: Array.from(files) })
   }
@@ -91,8 +88,6 @@ function UploadFileListItem({
   onDeleteFileUpload,
 }: UploadFileListItemProps) {
   const context = useSelector(uploadFile.actor, (snapshot) => snapshot.context)
-
-  console.log('context', context)
 
   return (
     <li

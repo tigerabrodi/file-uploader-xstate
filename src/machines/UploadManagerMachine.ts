@@ -61,7 +61,6 @@ export const uploadManagerMachine = setup({
           files: Array<File>
         }
       ) => {
-        console.log('setUploadFiles')
         return {
           uploadFiles: params.files.map((file) => {
             const actor = createActor(uploadFileMachine, {
@@ -82,7 +81,6 @@ export const uploadManagerMachine = setup({
     ),
 
     uploadAllFiles: ({ context }) => {
-      console.log('uploadAllFiles')
       const actorsToUpload = context.uploadFiles
         .map(({ actor }) => {
           const snapshot = actor.getSnapshot()
