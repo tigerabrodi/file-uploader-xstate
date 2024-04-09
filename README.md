@@ -2,6 +2,8 @@
 
 File uploader built with XState. The file uploader allows you to upload multiple files concurrently. You can cancel, retry, and delete file uploads.
 
+Production site can be found [here](https://file-uploader-xstate.vercel.app/).
+
 https://github.com/tigerabrodi/file-uploader-xstate/assets/49603590/2f80b946-a1ea-4296-a84b-afa3dcdfb688
 
 # How to get it up and running locally
